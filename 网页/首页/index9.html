@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>绝对BL · 我的剧单</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Pacifico&family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff8fb;
+    --bg-alt:#fcf0f5;
+    --pink:#f3c9db;
+    --blue:#c6e3f1;
+    --lavender:#ddcff2;
+    --ink:#3a2a3c;
+    --ink-soft:#7a6579;
+    --accent:#a3406b;
+    --accent-deep:#7c2f52;
+    --gold:#d9a441;
+    --card-radius:18px;
+    --shadow-soft:0 10px 30px -14px rgba(122,63,92,0.35);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans SC', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Noto Serif SC', serif;
+    margin:0;
+  }
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+  button{font-family:inherit;cursor:pointer;}
+
+  /* ---------- NAV / LOGO ---------- */
+  .site-nav{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px clamp(20px,5vw,56px);
+    background:rgba(255,248,251,0.82);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(163,64,107,0.12);
+  }
+  .logo{ display:flex;align-items:center;gap:8px; }
+  .logo-crop{
+    position:relative;
+    height:52px;width:172px;
+    overflow:hidden;
+    flex-shrink:0;
+  }
+  .logo-crop.logo-crop-sm{ height:38px;width:126px; }
+  .logo-crop .logo-img{
+    position:absolute;top:50%;left:50%;
+    height:230%;width:auto;max-width:none;
+    transform:translate(-50%,-50%);
+    mix-blend-mode:multiply;
+  }
+  .logo-fallback{ align-items:center;gap:8px; }
+  .logo .mark{
+    width:26px;height:26px;border-radius:50%;
+    background:conic-gradient(from 200deg,var(--pink),var(--blue),var(--lavender),var(--pink));
+    flex-shrink:0;
+  }
+  .logo-cn{
+    font-family:'ZCOOL KuaiLe', cursive;
+    font-size:1.9rem;font-weight:400;letter-spacing:.02em;
+    color:#ff6fa8;
+    text-shadow:2px 2px 0 #ffe3ee;
+  }
+  .logo-en{
+    font-family:'Pacifico', cursive;
+    font-size:1.45rem;font-weight:400;letter-spacing:.01em;
+    margin-left:3px;
+    background:linear-gradient(120deg,#ff3399,#9c5fd6);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(1.5px 1.5px 0 #ffe3ee);
+  }
+  .nav-links{
+    display:flex;gap:28px;list-style:none;margin:0;padding:0;
+    font-size:.92rem;font-weight:500;color:var(--ink-soft);
+  }
+  .nav-links a{ position:relative;padding:4px 0;transition:color .2s ease; }
+  .nav-links a::after{
+    content:"";position:absolute;left:0;bottom:-2px;width:0;height:2px;
+    background:linear-gradient(90deg,var(--accent),var(--lavender));
+    transition:width .25s ease;
+  }
+  .nav-links a:hover{color:var(--accent-deep);}
+  .nav-links a:hover::after{width:100%;}
+  .nav-right{display:flex;align-items:center;gap:10px;}
+  .nav-search{
+    display:flex;align-items:center;gap:8px;
+    background:var(--bg-alt);border:1px solid rgba(163,64,107,0.18);
+    border-radius:999px;padding:8px 14px;font-size:.85rem;color:var(--ink-soft);
+  }
+  .nav-search input{
+    border:none;background:transparent;outline:none;width:140px;
+    font-family:inherit;font-size:.85rem;color:var(--ink);
+  }
+  .add-btn{
+    width:34px;height:34px;border-radius:50%;border:none;flex-shrink:0;
+    background:linear-gradient(135deg,var(--pink),var(--lavender));
+    color:var(--accent-deep);font-size:1.15rem;font-weight:700;
+    display:flex;align-items:center;justify-content:center;line-height:1;
+    box-shadow:0 6px 16px -8px rgba(163,64,107,0.5);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .add-btn:hover{transform:translateY(-2px);box-shadow:0 10px 20px -8px rgba(163,64,107,0.6);}
+  .nav-toggle{ display:none;flex-direction:column;gap:4px;background:none;border:none;padding:6px; }
+  .nav-toggle span{width:22px;height:2px;background:var(--accent-deep);border-radius:2px;}
+
+  /* ---------- TOAST ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);
+    background:var(--accent-deep);color:#fff9fb;
+    padding:12px 22px;border-radius:999px;font-size:.85rem;
+    box-shadow:0 14px 30px -12px rgba(58,42,60,0.5);
+    opacity:0;pointer-events:none;transition:all .3s ease;z-index:100;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    margin:20px clamp(16px,4vw,48px) 0;
+    border-radius:28px;
+    overflow:hidden;
+    background:#f3e2e9;
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:radial-gradient(rgba(58,42,60,0.08) 1px, transparent 1.5px);
+    background-size:20px 20px;
+  }
+  .hero-track{position:relative;height:460px;}
+  .slide{
+    position:absolute;inset:0;
+    display:grid;grid-template-columns:1.1fr .9fr;align-items:end;
+    padding:clamp(20px,4vw,52px);
+    opacity:0;visibility:hidden;
+    transition:opacity .9s ease, background .8s ease;
+    background:
+      radial-gradient(120% 140% at 10% 0%, var(--pink) 0%, transparent 55%),
+      radial-gradient(120% 140% at 90% 10%, var(--blue) 0%, transparent 55%),
+      linear-gradient(135deg,#f4d9e4,#dcebf5);
+  }
+  .slide.active{opacity:1;visibility:visible;}
+  .slide-copy{position:relative;z-index:2;padding-bottom:10px;}
+  .slide-eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:.78rem;letter-spacing:.14em;color:var(--accent-deep);
+    background:rgba(255,255,255,0.55);
+    border:1px solid rgba(163,64,107,0.25);
+    padding:5px 12px;border-radius:999px;margin-bottom:14px;
+  }
+  .slide-title{
+    font-size:clamp(1.6rem,3.6vw,2.6rem);
+    color:#fffaf9;line-height:1.15;margin-bottom:10px;font-weight:900;
+    text-shadow:0 3px 16px rgba(40,20,32,0.3);
+  }
+  .slide-meta{ display:flex;flex-wrap:wrap;gap:10px;font-size:.85rem;color:var(--ink-soft);margin-bottom:14px; }
+  .slide-meta span{ background:rgba(255,255,255,0.6);border:1px solid rgba(163,64,107,0.15);padding:3px 10px;border-radius:999px; }
+  .slide-desc{ max-width:48ch;color:rgba(255,250,252,0.9);font-size:.92rem;line-height:1.7;margin-bottom:18px;text-shadow:0 2px 10px rgba(40,20,32,0.2); }
+  .slide-cta{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--accent-deep);color:#fff9fb;
+    padding:11px 22px;border-radius:999px;font-size:.9rem;font-weight:600;
+    box-shadow:var(--shadow-soft);border:none;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .slide-cta:hover{transform:translateY(-2px);box-shadow:0 14px 32px -12px rgba(122,47,82,0.5);}
+  .slide-poster{
+    position:relative;z-index:2;justify-self:end;width:min(230px,80%);
+    aspect-ratio:3/4.2;border-radius:20px;
+    box-shadow:0 20px 45px -16px rgba(58,42,60,0.45);overflow:hidden;
+  }
+  .slide-poster .poster-fallback{
+    position:absolute;inset:0;display:flex;align-items:flex-end;padding:16px;color:#fff;
+    transition:background .8s ease;
+  }
+  .slide-poster img{ position:absolute;inset:0;width:100%;height:100%;object-fit:cover; }
+  .slide.active .slide-poster img,
+  .slide.active .poster-fallback{animation:kenburns 7s ease-in-out forwards;}
+  @keyframes kenburns{ 0%{transform:scale(1);} 100%{transform:scale(1.06);} }
+  .poster-cp{
+    position:relative;z-index:1;font-size:.78rem;font-weight:700;letter-spacing:.02em;
+    background:rgba(0,0,0,0.36);backdrop-filter:blur(3px);
+    padding:5px 11px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;color:#fff;
+  }
+
+  .hero-controls{ position:absolute;left:0;right:0;bottom:18px;display:flex;justify-content:center;gap:10px;z-index:3; }
+  .hero-dot{ width:9px;height:9px;border-radius:50%;background:rgba(58,42,60,0.28);border:none;padding:0;transition:all .25s ease; }
+  .hero-dot.active{ width:26px;border-radius:6px;background:var(--accent-deep); }
+
+  /* arrow buttons: chevron icons, not filled circles */
+  .hero-arrow{
+    position:absolute;top:50%;transform:translateY(-50%);
+    z-index:3;width:42px;height:42px;border-radius:12px;
+    background:rgba(255,255,255,0.22);border:1px solid rgba(163,64,107,0.16);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--accent-deep);
+    transition:background .2s ease, transform .2s ease, border-color .2s ease;
+  }
+  .hero-arrow svg{ width:20px;height:20px; }
+  .hero-arrow:hover{ background:rgba(255,255,255,0.85);border-color:var(--accent);transform:translateY(-50%) scale(1.05); }
+  .hero-arrow.prev{left:16px;}
+  .hero-arrow.next{right:16px;}
+
+  /* ---------- STATS STRIP ---------- */
+  .stats-strip{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:14px;margin:22px clamp(16px,4vw,48px) 0;
+  }
+  .stat-card{
+    background:#fff;border:1px solid rgba(163,64,107,0.12);
+    border-radius:16px;padding:16px 18px;
+    display:flex;flex-direction:column;gap:4px;
+    box-shadow:0 8px 20px -16px rgba(58,42,60,0.3);
+  }
+  .stat-card .num{ font-family:'Noto Serif SC',serif;font-size:1.6rem;font-weight:700;color:var(--accent-deep); }
+  .stat-card .label{ font-size:.78rem;color:var(--ink-soft); }
+
+  /* ---------- QUICK ENTRY ---------- */
+  .quick-entry{ padding:36px clamp(16px,4vw,48px) 6px; }
+  .quick-entry h2.section-label{
+    font-size:.8rem;letter-spacing:.16em;color:var(--ink-soft);
+    text-transform:uppercase;margin-bottom:14px;font-family:'Noto Sans SC',sans-serif;font-weight:700;
+  }
+  .chip-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+  .chip{
+    padding:8px 18px;border-radius:999px;font-size:.86rem;font-weight:500;
+    border:1px solid rgba(163,64,107,0.22);background:#fff;color:var(--ink-soft);
+    transition:all .2s ease;
+  }
+  .chip:hover{
+    background:linear-gradient(120deg,var(--pink),var(--lavender));
+    color:var(--accent-deep);border-color:transparent;transform:translateY(-1px);
+  }
+
+  /* ---------- CP PAIRING PREVIEW ---------- */
+  .section-block{ padding:24px clamp(16px,4vw,48px) 8px; }
+  .section-block .grid-header{ display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px; }
+  .section-block .grid-header h2{ font-size:1.5rem;color:var(--ink); }
+  .section-block .grid-header a{ font-size:.85rem;color:var(--accent);font-weight:600; }
+  .grid-sub{ font-size:.82rem;color:var(--ink-soft);margin-bottom:18px; }
+
+  .cp-row{ display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px; }
+  .cp-card{
+    background:#fff;border:1px solid rgba(163,64,107,0.1);border-radius:16px;
+    padding:16px;display:flex;align-items:center;gap:14px;
+    box-shadow:0 8px 20px -16px rgba(58,42,60,0.28);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .cp-card:hover{ transform:translateY(-3px);box-shadow:var(--shadow-soft); }
+  .cp-avatars{ position:relative;width:54px;height:40px;flex-shrink:0; }
+  .cp-avatars .bubble{
+    position:absolute;top:0;width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:.85rem;
+    border:2px solid #fff;box-shadow:0 3px 8px -3px rgba(58,42,60,0.4);
+  }
+  .cp-avatars .bubble.a{ left:0;z-index:2; }
+  .cp-avatars .bubble.b{ left:20px;z-index:1; }
+  .cp-info h4{ font-size:.9rem;color:var(--ink);margin-bottom:3px; }
+  .cp-info p{ margin:0;font-size:.76rem;color:var(--ink-soft); }
+
+  /* ---------- GRID PREVIEW ---------- */
+  .drama-grid{ display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:20px; }
+  .drama-card{
+    background:#fff;border-radius:var(--card-radius);overflow:hidden;
+    border:1px solid rgba(163,64,107,0.1);box-shadow:0 8px 22px -16px rgba(58,42,60,0.3);
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .drama-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-soft);}
+  .card-poster{ aspect-ratio:3/4;position:relative;overflow:hidden; }
+  .card-poster .poster-fallback{
+    position:absolute;inset:0;display:flex;align-items:flex-end;padding:12px;color:#fff;
+    transition:background .8s ease;
+  }
+  .card-poster img{ position:absolute;inset:0;width:100%;height:100%;object-fit:cover; }
+  .card-poster .cp-tag{
+    position:relative;z-index:1;font-size:.72rem;background:rgba(0,0,0,0.36);color:#fff;
+    padding:3px 9px;border-radius:999px;font-weight:600;
+  }
+  .card-poster .country-badge{
+    position:absolute;top:10px;right:10px;z-index:1;font-size:.7rem;font-weight:700;
+    color:var(--accent-deep);background:rgba(255,255,255,0.85);padding:3px 9px;border-radius:999px;
+  }
+  .card-body{padding:12px 14px 16px;}
+  .card-body h3{font-size:.95rem;color:var(--ink);margin-bottom:4px;line-height:1.4;}
+  .card-body .meta{font-size:.76rem;color:var(--ink-soft);margin-bottom:8px;}
+  .card-body .summary{
+    font-size:.78rem;color:var(--ink-soft);line-height:1.6;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+
+  /* ---------- RANKING PREVIEW ---------- */
+  .rank-list{ display:flex;flex-direction:column;gap:10px; }
+  .rank-item{
+    display:flex;align-items:center;gap:14px;
+    background:#fff;border:1px solid rgba(163,64,107,0.1);border-radius:14px;
+    padding:10px 16px;box-shadow:0 6px 16px -14px rgba(58,42,60,0.3);
+  }
+  .rank-pos{
+    width:30px;height:30px;border-radius:9px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Noto Serif SC',serif;font-weight:700;font-size:.95rem;color:#fff;
+    background:linear-gradient(160deg,var(--accent),var(--accent-deep));
+  }
+  .rank-item:nth-child(n+4) .rank-pos{ background:linear-gradient(160deg,#c9b3da,#9a7fb4); }
+  .rank-title{ font-size:.9rem;color:var(--ink);flex:1;min-width:0; }
+  .rank-meta{ font-size:.76rem;color:var(--ink-soft);white-space:nowrap; }
+  .rank-pending{
+    font-size:.72rem;color:var(--accent-deep);background:var(--bg-alt);
+    padding:3px 9px;border-radius:999px;white-space:nowrap;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    margin-top:56px;padding:38px clamp(16px,4vw,48px) 30px;
+    border-top:1px solid rgba(163,64,107,0.12);
+    display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;
+    color:var(--ink-soft);font-size:.85rem;
+  }
+  footer .foot-brand{max-width:340px;}
+  footer .foot-brand .display{margin-bottom:8px;}
+  footer .foot-links{display:flex;gap:36px;flex-wrap:wrap;}
+  footer .foot-links div h4{
+    font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink);margin-bottom:10px;font-family:'Noto Sans SC',sans-serif;
+  }
+  footer .foot-links ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
+  footer .copyright{
+    width:100%;margin-top:20px;padding-top:16px;
+    border-top:1px dashed rgba(163,64,107,0.18);
+    font-size:.76rem;color:var(--ink-soft);opacity:.8;
+  }
+
+  @media (max-width:760px){
+    .nav-links{display:none;}
+    .nav-search input{width:90px;}
+    .nav-toggle{display:flex;}
+    .slide{grid-template-columns:1fr;}
+    .slide-poster{display:none;}
+    .hero-track{height:400px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .slide,.slide-poster img,.poster-fallback,.hero-arrow,.chip,.drama-card,.add-btn,.cp-card{transition:none;animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="logo">
+    <div class="logo-crop">
+      <img class="logo-img" src="https://raw.githubusercontent.com/789xkxy/bl_drama_list_web/d5ad95e39beacf6b2a9148aa9b1f238f89aa1afd/%E7%BD%91%E7%AB%99%E5%88%B6%E4%BD%9C%E4%B8%AD/%E6%A0%87%E9%A2%98.png"
+           alt="绝对BL"
+           onerror="this.closest('.logo-crop').style.display='none'; this.closest('.logo-crop').nextElementSibling.style.display='flex';">
+    </div>
+    <span class="logo-fallback" style="display:none;"><span class="mark"></span><span class="logo-cn">绝对</span><span class="logo-en">BL</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="../列表页/list.html">剧集列表</a></li>
+    <li><a href="#">演员</a></li>
+    <li><a href="#">配对</a></li>
+    <li><a href="#">收藏夹</a></li>
+    <li><a href="#">剧评区</a></li>
+    <li><a href="#">排行榜</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-search">
+      🔍<input type="text" id="searchInput" placeholder="搜索剧名 / 演员 / Tag">
+    </div>
+    <button class="add-btn" id="addDramaBtn" aria-label="添加剧集" title="添加剧集（即将上线）">+</button>
+    <button class="nav-toggle" aria-label="打开菜单"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="toast" id="toast">添加剧集功能即将上线，敬请期待～</div>
+
+<section class="hero">
+  <div class="hero-track" id="heroTrack">
+    <button class="hero-arrow prev" id="heroPrev" aria-label="上一部">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>
+    </button>
+    <button class="hero-arrow next" id="heroNext" aria-label="下一部">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+    </button>
+    <div class="hero-controls" id="heroDots"></div>
+  </div>
+</section>
+
+<div class="stats-strip" id="statsStrip"></div>
+
+<section class="quick-entry">
+  <h2 class="section-label">快速入口 · 按国家</h2>
+  <div class="chip-row">
+    <a class="chip" href="../列表页/list.html?country=泰国">泰国</a>
+    <a class="chip" href="../列表页/list.html?country=韩国">韩国</a>
+    <a class="chip" href="../列表页/list.html?country=日本">日本</a>
+    <a class="chip" href="../列表页/list.html">全部国家</a>
+  </div>
+  <h2 class="section-label">快速入口 · 按标签</h2>
+  <div class="chip-row">
+    <a class="chip" href="../列表页/list.html?tag=酸涩">#酸涩</a>
+    <a class="chip" href="../列表页/list.html?tag=校园">#校园</a>
+    <a class="chip" href="../列表页/list.html?tag=职场">#职场</a>
+    <a class="chip" href="../列表页/list.html?tag=甜蜜">#甜蜜</a>
+    <a class="chip" href="../列表页/list.html?tag=NC">#NC</a>
+    <a class="chip" href="../列表页/list.html?tag=青春">#青春</a>
+  </div>
+</section>
+
+<section class="section-block">
+  <div class="grid-header">
+    <h2 class="display">高能 CP</h2>
+    <a href="../列表页/list.html">查看全部配对 →</a>
+  </div>
+  <p class="grid-sub">精选 6 对配对，点开跳转对应剧集</p>
+  <div class="cp-row" id="cpRow"></div>
+</section>
+
+<section class="section-block">
+  <div class="grid-header">
+    <h2 class="display">最新添加</h2>
+    <a href="../列表页/list.html">查看全部 13 部剧集 →</a>
+  </div>
+  <p class="grid-sub" id="gridSub">最近加入片单的 8 部</p>
+  <div class="drama-grid" id="dramaGrid"></div>
+</section>
+
+<section class="section-block">
+  <div class="grid-header">
+    <h2 class="display">排行榜</h2>
+    <a href="#">查看完整排行榜 →</a>
+  </div>
+  <p class="grid-sub">评分系统开发中，以下为占位排序，上线后将按你的打分自动更新</p>
+  <div class="rank-list" id="rankList"></div>
+</section>
+
+<footer>
+  <div class="foot-brand">
+    <div class="display">
+      <div class="logo-crop logo-crop-sm">
+        <img class="logo-img" src="https://raw.githubusercontent.com/789xkxy/bl_drama_list_web/d5ad95e39beacf6b2a9148aa9b1f238f89aa1afd/%E7%BD%91%E7%AB%99%E5%88%B6%E4%BD%9C%E4%B8%AD/%E6%A0%87%E9%A2%98.png"
+             alt="绝对BL"
+             onerror="this.closest('.logo-crop').style.display='none'; this.closest('.logo-crop').nextElementSibling.style.display='flex';">
+      </div>
+      <span class="logo-fallback" style="display:none;"><span class="logo-cn">绝对</span><span class="logo-en">BL</span></span>
+    </div>
+    <p>这是我一个人的观剧存档，记录看过的每一部剧、每一对CP、每一次心动瞬间。数据仅保存在本地，不涉及其他用户。</p>
+  </div>
+  <div class="foot-links">
+    <div>
+      <h4>浏览</h4>
+      <ul><li><a href="../列表页/list.html">剧集列表</a></li><li><a href="#">配对标签</a></li><li><a href="#">排行榜</a></li></ul>
+    </div>
+    <div>
+      <h4>我的</h4>
+      <ul><li><a href="#">收藏夹</a></li><li><a href="#">剧评区</a></li><li><a href="#">评分记录</a></li></ul>
+    </div>
+    <div>
+      <h4>联系</h4>
+      <ul><li><a href="#">留言板（可选）</a></li></ul>
+    </div>
+  </div>
+  <div class="copyright">© 2026 绝对BL · 个人观剧记录站 · 已收录 13 部剧集，持续更新中</div>
+</footer>
+
+<script src="../../剧集数据/dramas.js"></script>
+<script>
+(function(){
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- color helpers: sample a poster image and derive a matching, slightly deeper wash ---- */
+  function extractColor(img){
+    return new Promise((resolve) => {
+      try{
+        const c = document.createElement('canvas');
+        const w = c.width = 24, h = c.height = 32;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const data = ctx.getImageData(0, 0, w, h).data;
+        let r=0,g=0,b=0,n=0;
+        for(let i=0;i<data.length;i+=4){ r+=data[i]; g+=data[i+1]; b+=data[i+2]; n++; }
+        resolve([Math.round(r/n), Math.round(g/n), Math.round(b/n)]);
+      }catch(e){ resolve(null); }
+    });
+  }
+  const toward = (rgb, target, amt) => rgb.map((c,i) => Math.round(c + (target[i]-c)*amt));
+  const mixWhite = (rgb, amt) => toward(rgb, [255,255,255], amt);
+  const mixBlack = (rgb, amt) => toward(rgb, [0,0,0], amt);
+  const rgbStr = (rgb, a) => a===undefined ? `rgb(${rgb[0]},${rgb[1]},${rgb[2]})` : `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
+  const hexToRgb = (hex) => {
+    const n = parseInt(hex.replace('#',''), 16);
+    return [(n>>16)&255, (n>>8)&255, n&255];
+  };
+
+  /* single consistent look for every slide: poster theme color, deep on the left fading lighter to the right */
+  function buildWash(rgb){
+    const deep = mixBlack(rgb, 0.12);
+    const mid  = mixWhite(rgb, 0.35);
+    const light = mixWhite(rgb, 0.72);
+    return `linear-gradient(100deg, ${rgbStr(deep)} 0%, ${rgbStr(mid)} 50%, ${rgbStr(light)} 100%)`;
+  }
+  function buildPosterFallback(rgb){
+    const deep = mixBlack(rgb, 0.3);
+    const light = mixWhite(rgb, 0.1);
+    return `linear-gradient(170deg, ${rgbStr(light)}, ${rgbStr(deep)} 78%)`;
+  }
+
+  function toRaw(url){
+    const m = url.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/([^/]+)\/(.+)$/);
+    if(!m) return url;
+    return `https://raw.githubusercontent.com/${m[1]}/${m[2]}/${m[3]}/${m[4]}`;
+  }
+
+  const gradients = ['#e79cc0,#a35a89','#8fb9d8,#4f6f96','#b79ce0,#6f4f9c','#f0b3c4,#c9749a','#c9a6dd,#8368a8','#9fd0c7,#4f9488'];
+
+  const dramaData = (window.DRAMAS || []).map((d, i) => Object.assign({}, d, { raw: toRaw(d.image), grad: gradients[i % gradients.length] }));
+
+  const byId = id => dramaData.find(d => d.id === id);
+
+  // 内容子集：hero 精选 5 部 / 最新添加预览 8 部（按加入顺序倒序）/ CP 预览 6 对 / 排行榜占位 5 部
+  const heroDramas = ["0002","0003","0004","0005","0009"].map(byId);
+  const latestGridDramas = ["0013","0012","0011","0010","0009","0008","0007","0006"].map(byId);
+  const cpPreviewDramas = ["0001","0002","0003","0004","0005","0006"].map(byId);
+  const rankPreviewDramas = ["0007","0009","0010","0012","0013"].map(byId);
+
+  function applyPosterTint(imgEl, slideEl, fallbackEl){
+    imgEl.crossOrigin = 'anonymous';
+    imgEl.addEventListener('load', () => {
+      extractColor(imgEl).then(rgb => {
+        if(!rgb) return;
+        if(slideEl) slideEl.style.background = buildWash(rgb);
+        if(fallbackEl) fallbackEl.style.background = buildPosterFallback(rgb);
+      });
+    });
+    imgEl.addEventListener('error', () => { imgEl.remove(); });
+  }
+
+  /* ---- 首页「查看全部」入口文字跟随数据量 ---- */
+  const allLink = document.querySelector('.grid-header a[href*="list.html"]');
+  if(allLink){ allLink.textContent = '查看全部 ' + dramaData.length + ' 部剧集 →'; }
+
+  /* ---- Build hero slides ---- */
+  const heroTrack = document.getElementById('heroTrack');
+  heroDramas.forEach((d, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'slide' + (i === 0 ? ' active' : '');
+    const [gradLight] = d.grad.split(',').map(hexToRgb);
+    slide.innerHTML = `
+      <div class="slide-copy">
+        <div class="slide-eyebrow">✦ 精选片单</div>
+        <h1 class="slide-title">《${d.title}》</h1>
+        <div class="slide-meta"><span>${d.country}</span><span>${d.year}</span></div>
+        <p class="slide-desc">${d.summary}</p>
+        <a class="slide-cta" href="../详情页/drama.html?id=${d.id}">进入剧集详情 →</a>
+      </div>
+      <div class="slide-poster">
+        <div class="poster-fallback" style="background:${buildPosterFallback(gradLight)};">
+          <span class="poster-cp">${d.cp}</span>
+        </div>
+        <img src="${d.raw}" alt="${d.title}" loading="lazy">
+      </div>
+    `;
+    // seed with the same formula right away, using the palette placeholder color,
+    // so it looks consistent even before (or if) live color extraction succeeds
+    slide.style.background = buildWash(gradLight);
+    heroTrack.appendChild(slide);
+    applyPosterTint(slide.querySelector('img'), slide, slide.querySelector('.poster-fallback'));
+  });
+
+  /* ---- Hero carousel logic ---- */
+  const slides = document.querySelectorAll('.slide');
+  const dotsWrap = document.getElementById('heroDots');
+  let current = 0, timer;
+
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', '第 ' + (i + 1) + ' 张');
+    dot.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(dot);
+  });
+  const dots = document.querySelectorAll('.hero-dot');
+
+  function goTo(index){
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = (index + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+  }
+  function next(){ goTo(current + 1); }
+  function prev(){ goTo(current - 1); }
+
+  document.getElementById('heroNext').addEventListener('click', () => { next(); restart(); });
+  document.getElementById('heroPrev').addEventListener('click', () => { prev(); restart(); });
+
+  function restart(){
+    clearInterval(timer);
+    if(!reduceMotion && slides.length > 1){ timer = setInterval(next, 5500); }
+  }
+  const heroSection = document.querySelector('.hero');
+  heroSection.addEventListener('mouseenter', () => clearInterval(timer));
+  heroSection.addEventListener('mouseleave', restart);
+  restart();
+
+  /* ---- Mobile nav toggle ---- */
+  const toggle = document.querySelector('.nav-toggle');
+  const links = document.querySelector('.nav-links');
+  toggle.addEventListener('click', () => {
+    const open = links.style.display === 'flex';
+    links.style.display = open ? 'none' : 'flex';
+    links.style.flexDirection = 'column';
+    links.style.position = 'absolute';
+    links.style.top = '58px';
+    links.style.right = '20px';
+    links.style.background = '#fff';
+    links.style.padding = '16px 22px';
+    links.style.borderRadius = '14px';
+    links.style.boxShadow = '0 12px 30px -12px rgba(58,42,60,0.35)';
+  });
+
+  /* ---- Search: Enter → 列表页 ---- */
+  const searchInput = document.getElementById('searchInput');
+  if(searchInput){
+    searchInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){
+        const q = e.target.value.trim();
+        location.href = '../列表页/list.html' + (q ? '?q=' + encodeURIComponent(q) : '');
+      }
+    });
+  }
+
+  /* ---- + Add drama button (placeholder for future feature) ---- */
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  document.getElementById('addDramaBtn').addEventListener('click', () => {
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+  });
+
+  /* ---- Stats strip ---- */
+  const stats = document.getElementById('statsStrip');
+  const countries = new Set(dramaData.map(d => d.country));
+  const cps = new Set(dramaData.map(d => d.cp));
+  [
+    { num: dramaData.length, label: '剧集总数' },
+    { num: cps.size, label: 'CP 配对数' },
+    { num: countries.size, label: '涵盖国家' },
+    { num: '测试中', label: '评分系统状态' }
+  ].forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'stat-card';
+    el.innerHTML = `<span class="num">${s.num}</span><span class="label">${s.label}</span>`;
+    stats.appendChild(el);
+  });
+
+  /* ---- Drama grid preview (最近加入的 8 部) ---- */
+  const grid = document.getElementById('dramaGrid');
+  latestGridDramas.forEach(d => {
+    const [gradLight] = d.grad.split(',').map(hexToRgb);
+    const card = document.createElement('div');
+    card.className = 'drama-card';
+    card.innerHTML = `
+      <div class="card-poster">
+        <div class="poster-fallback" style="background:${buildPosterFallback(gradLight)};">
+          <span class="cp-tag">${d.cp}</span>
+        </div>
+        <span class="country-badge">${d.country}</span>
+        <img src="${d.raw}" alt="${d.title}" loading="lazy">
+      </div>
+      <div class="card-body">
+        <h3>${d.title}</h3>
+        <div class="meta">${d.country} · ${d.year}</div>
+        <div class="summary">${d.summary}</div>
+      </div>
+    `;
+    grid.appendChild(card);
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => { location.href = '../详情页/drama.html?id=' + d.id; });
+    applyPosterTint(card.querySelector('img'), null, card.querySelector('.poster-fallback'));
+  });
+
+  /* ---- CP pairing preview ---- */
+  const cpRow = document.getElementById('cpRow');
+  const bubbleColors = ['#d989ad','#7fa9c9','#9b7ec2','#e0a1a1','#c39bd8','#7fc2b4'];
+  cpPreviewDramas.forEach((d, i) => {
+    const [nameA, nameB] = d.cp.split(/[×xX]/).map(s => s.trim());
+    const card = document.createElement('div');
+    card.className = 'cp-card';
+    card.innerHTML = `
+      <div class="cp-avatars">
+        <span class="bubble a" style="background:${bubbleColors[i % bubbleColors.length]};">${(nameA||'?')[0]}</span>
+        <span class="bubble b" style="background:${bubbleColors[(i+2) % bubbleColors.length]};">${(nameB||'?')[0]}</span>
+      </div>
+      <div class="cp-info">
+        <h4>${d.cp}</h4>
+        <p>《${d.title}》· ${d.country}</p>
+      </div>
+    `;
+    cpRow.appendChild(card);
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => { location.href = '../详情页/drama.html?id=' + d.id; });
+  });
+
+  /* ---- Ranking preview (占位榜单，评分系统上线后按真实分数排序) ---- */
+  const rankList = document.getElementById('rankList');
+  rankPreviewDramas.forEach((d, i) => {
+    const item = document.createElement('div');
+    item.className = 'rank-item';
+    item.innerHTML = `
+      <span class="rank-pos">${i + 1}</span>
+      <span class="rank-title">${d.title} <span style="color:var(--ink-soft);font-weight:400;">· ${d.cp}</span></span>
+      <span class="rank-pending">待评分</span>
+    `;
+    rankList.appendChild(item);
+    item.style.cursor = 'pointer';
+    item.addEventListener('click', () => { location.href = '../详情页/drama.html?id=' + d.id; });
+  });
+})();
+</script>
+
+</body>
+</html>
