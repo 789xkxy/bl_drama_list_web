@@ -110,9 +110,9 @@
     <li><a href="../列表页/list.html" class="active">剧集列表</a></li>
     <li><a href="#">演员</a></li>
     <li><a href="#">配对</a></li>
-    <li><a href="#">收藏夹</a></li>
+    <li><a href="../想看清单/wishlist.html">想看清单</a></li>
     <li><a href="#">剧评区</a></li>
-    <li><a href="#">排行榜</a></li>
+    <li><a href="../排行榜/ranking.html">排行榜</a></li>
   </ul>
   <div class="nav-right">
     <div class="nav-search">🔍<input type="text" id="searchInput" placeholder="搜索剧名 / 演员 / Tag"></div>
@@ -160,8 +160,8 @@
     <p>这是我一个人的观剧存档，记录看过的每一部剧、每一对CP、每一次心动瞬间。数据仅保存在本地，不涉及其他用户。</p>
   </div>
   <div class="foot-links">
-    <div><h4>浏览</h4><ul><li><a href="../列表页/list.html">剧集列表</a></li><li><a href="#">配对标签</a></li><li><a href="#">排行榜</a></li></ul></div>
-    <div><h4>我的</h4><ul><li><a href="#">收藏夹</a></li><li><a href="#">剧评区</a></li><li><a href="#">评分记录</a></li></ul></div>
+    <div><h4>浏览</h4><ul><li><a href="../列表页/list.html">剧集列表</a></li><li><a href="#">配对标签</a></li><li><a href="../排行榜/ranking.html">排行榜</a></li></ul></div>
+    <div><h4>我的</h4><ul><li><a href="../想看清单/wishlist.html">想看清单</a></li><li><a href="#">剧评区</a></li><li><a href="#">评分记录</a></li></ul></div>
   </div>
   <div class="copyright">© 2026 绝对BL · 个人观剧记录站 · 持续更新中</div>
 </footer>
@@ -170,7 +170,10 @@
 <script>
 (function(){
   const gradients = ['#e79cc0,#a35a89','#8fb9d8,#4f6f96','#b79ce0,#6f4f9c','#f0b3c4,#c9749a','#c9a6dd,#8368a8','#9fd0c7,#4f9488'];
-  const dramaData = (window.DRAMAS || []).map((d, i) => Object.assign({}, d, { raw: toRaw(d.image), grad: gradients[i % gradients.length] }));
+  const dramaAll = (window.DRAMAS || []).map((d, i) => Object.assign({}, d, { raw: toRaw(d.image), grad: gradients[i % gradients.length] }));
+  const statusMap = (function(){ try { return JSON.parse(localStorage.getItem('bl_status')) || {}; } catch(e){ return {}; } })();
+  /* 想看 = 仅出现在想看清单，列表页隐藏 */
+  const dramaData = dramaAll.filter(d => statusMap[d.id] !== '想看');
 
   function toRaw(url){
     const m = url.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/([^/]+)\/(.+)$/);
@@ -204,8 +207,12 @@
     const light = mixWhite(rgb, 0.1);
     return 'linear-gradient(170deg, ' + rgbStr(light) + ', ' + rgbStr(deep) + ' 78%)';
   }
-  function applyPosterTint(imgEl, slideEl, fallbackEl){
-    imgEl.crossOrigin = 'anonymous';
+  function applyPosterTint(imgEl, slideEl, fallbackEl, seed){
+    if(seed){
+      if(slideEl) slideEl.style.background = 'linear-gradient(100deg, ' + rgbStr(mixBlack(seed,0.12)) + ' 0%, ' + rgbStr(mixWhite(seed,0.35)) + ' 50%, ' + rgbStr(mixWhite(seed,0.72)) + ' 100%)';
+      if(fallbackEl) fallbackEl.style.background = buildPosterFallback(seed);
+    }
+    if(/^https?:/i.test(imgEl.src)) imgEl.crossOrigin = 'anonymous';
     imgEl.addEventListener('load', () => {
       extractColor(imgEl).then(rgb => {
         if(!rgb) return;
@@ -312,13 +319,13 @@
     const grid = document.getElementById('dramaGrid');
     grid.innerHTML = '';
     list.forEach(d => {
-      const [gradLight] = d.grad.split(',').map(hexToRgb);
+      const baseCol = d.color ? hexToRgb(d.color) : d.grad.split(',').map(hexToRgb)[0];
       const card = document.createElement('a');
       card.className = 'drama-card';
       card.href = '../详情页/drama.html?id=' + d.id;
       card.innerHTML = `
         <div class="card-poster">
-          <div class="poster-fallback" style="background:${buildPosterFallback(gradLight)};">
+          <div class="poster-fallback" style="background:${buildPosterFallback(baseCol)};">
             <span class="cp-tag">${d.cp}</span>
           </div>
           <span class="country-badge">${d.country}</span>
@@ -330,7 +337,7 @@
           <div class="summary">${d.summary}</div>
         </div>`;
       grid.appendChild(card);
-      applyPosterTint(card.querySelector('img'), null, card.querySelector('.poster-fallback'));
+      applyPosterTint(card.querySelector('img'), null, card.querySelector('.poster-fallback'), baseCol);
     });
     document.getElementById('emptyState').style.display = list.length ? 'none' : 'block';
   }

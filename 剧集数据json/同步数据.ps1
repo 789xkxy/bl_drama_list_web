@@ -1,10 +1,14 @@
 # 绝对BL 数据同步脚本
 # 从 drama_list02.json 生成规范化的 dramas.json（权威数据）和页面直接引用的 dramas.js
+# 海报图使用本地 info/pics 文件夹（相对路径，离线也能看；推送到 GitHub 后同样可用）
+# 海报主色来自 海报色.json（由 计算海报色.py 生成），供页面直接做海报背景，离线也能渲染
 $ErrorActionPreference = 'Stop'
 $base = Split-Path -Parent $MyInvocation.MyCommand.Path
 $srcFile = Join-Path $base 'drama_list02.json'
 $jsonOut = Join-Path $base 'dramas.json'
 $jsOut   = Join-Path $base 'dramas.js'
+$colorsFile = Join-Path $base '海报色.json'
+$picsPrefix = '../../info/pics/'
 
 function Escape-JsonString([string]$s) {
   if ($null -eq $s) { return '""' }
@@ -27,10 +31,25 @@ function Escape-JsonString([string]$s) {
   return '"' + $sb.ToString() + '"'
 }
 
+# 从图片 URL 提取文件名并转成本地相对路径（URL 可能带 %xx 编码，需解码）
+function Get-LocalImagePath([string]$url) {
+  $name = $url.Substring($url.LastIndexOf('/') + 1)
+  $name = [System.Uri]::UnescapeDataString($name)
+  return $picsPrefix + $name
+}
+
+$colors = @{}
+if(Test-Path -LiteralPath $colorsFile){
+  $colors = Get-Content -LiteralPath $colorsFile -Raw -Encoding UTF8 | ConvertFrom-Json
+}
+
 $data = Get-Content -LiteralPath $srcFile -Raw -Encoding UTF8 | ConvertFrom-Json
 $items = @()
 foreach ($d in $data) {
-  $image = [regex]::Replace($d.image, '^https://github\.com/([^/]+)/([^/]+)/blob/([^/]+)/(.+)$', 'https://raw.githubusercontent.com/$1/$2/$3/$4')
+  $image = Get-LocalImagePath $d.image
+  $fname = Split-Path -Leaf $image
+  $hex = ''
+  if($colors -and $colors.$fname){ $hex = $colors.$fname }
   $summary = $d.summary
   $tags = @($d.tags)
   $title = $d.title
@@ -49,6 +68,7 @@ foreach ($d in $data) {
     "year": $($d.year),
     "country": $(Escape-JsonString $d.country),
     "image": $(Escape-JsonString $image),
+    "color": $(Escape-JsonString $hex),
     "summary": $(Escape-JsonString $summary),
     "actors": [$actors],
     "cp": $(Escape-JsonString $d.cp),

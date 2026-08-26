@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>想看清单 · 绝对BL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Pacifico&family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff8fb; --bg-alt:#fcf0f5; --pink:#f3c9db; --blue:#c6e3f1; --lavender:#ddcff2;
+    --ink:#3a2a3c; --ink-soft:#7a6579; --accent:#a3406b; --accent-deep:#7c2f52; --gold:#d9a441;
+    --card-radius:18px; --shadow-soft:0 10px 30px -14px rgba(122,63,92,0.35);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans SC',sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4,.display{font-family:'Noto Serif SC',serif;margin:0;}
+  a{color:inherit;}
+  img{max-width:100%;display:block;}
+  button{font-family:inherit;cursor:pointer;}
+
+  .site-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px clamp(20px,5vw,56px);background:rgba(255,248,251,0.82);backdrop-filter:blur(10px);border-bottom:1px solid rgba(163,64,107,0.12);}
+  .logo{display:flex;align-items:center;gap:8px;}
+  .logo-crop{position:relative;height:52px;width:172px;overflow:hidden;flex-shrink:0;}
+  .logo-crop .logo-img{position:absolute;top:50%;left:50%;height:230%;width:auto;max-width:none;transform:translate(-50%,-50%);mix-blend-mode:multiply;}
+  .logo-fallback{display:flex;align-items:center;gap:8px;}
+  .logo .mark{width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,var(--pink),var(--blue),var(--lavender),var(--pink));flex-shrink:0;}
+  .logo-cn{font-family:'ZCOOL KuaiLe',cursive;font-size:1.9rem;font-weight:400;letter-spacing:.02em;color:#ff6fa8;text-shadow:2px 2px 0 #ffe3ee;}
+  .logo-en{font-family:'Pacifico',cursive;font-size:1.45rem;font-weight:400;letter-spacing:.01em;margin-left:3px;background:linear-gradient(120deg,#ff3399,#9c5fd6);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(1.5px 1.5px 0 #ffe3ee);}
+  .nav-links{display:flex;gap:28px;list-style:none;margin:0;padding:0;font-size:.92rem;font-weight:500;color:var(--ink-soft);}
+  .nav-links a{position:relative;padding:4px 0;transition:color .2s ease;}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--lavender));transition:width .25s ease;}
+  .nav-links a:hover{color:var(--accent-deep);}
+  .nav-links a:hover::after{width:100%;}
+  .nav-links a.active{color:var(--accent-deep);font-weight:700;}
+  .nav-links a.active::after{width:100%;}
+  .nav-right{display:flex;align-items:center;gap:10px;}
+  .nav-toggle{display:none;flex-direction:column;gap:4px;background:none;border:none;padding:6px;}
+  .nav-toggle span{width:22px;height:2px;background:var(--accent-deep);border-radius:2px;}
+
+  .page-head{padding:34px clamp(16px,4vw,48px) 4px;max-width:1100px;margin:0 auto;}
+  .page-head h1{font-size:2rem;color:var(--ink);}
+  .page-sub{font-size:.85rem;color:var(--ink-soft);margin-top:8px;}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:20px clamp(16px,4vw,48px) 10px;}
+
+  .region-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;align-items:start;}
+  .region-col{min-width:0;background:#fff;border:1px solid rgba(163,64,107,0.1);border-radius:18px;padding:14px 16px 10px;box-shadow:0 8px 20px -16px rgba(58,42,60,0.3);}
+  .region-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-family:'Noto Serif SC',serif;font-size:1.05rem;color:var(--ink);}
+  .region-head .flag{font-size:1.05rem;}
+  .region-head::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(163,64,107,0.25),transparent);}
+
+  .wish-list{display:flex;flex-direction:column;gap:6px;}
+  .wish-item{display:flex;align-items:center;gap:11px;padding:7px 10px;border-radius:12px;border:1px solid #f0e3ea;background:#fff;cursor:pointer;transition:transform .15s, box-shadow .15s;}
+  .wish-item:hover{transform:translateY(-1px);box-shadow:var(--shadow-soft);}
+  .wish-thumb{width:36px;height:50px;border-radius:6px;overflow:hidden;position:relative;flex-shrink:0;background:var(--bg-alt);}
+  .wish-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .wish-main{flex:1;min-width:0;}
+  .wish-main .t{font-size:.9rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .wish-main .s{font-size:.74rem;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .wish-star{flex-shrink:0;font-size:1rem;}
+
+  .empty-state{text-align:center;padding:80px 20px;color:var(--ink-soft);font-size:.95rem;background:#fff;border:1px dashed rgba(163,64,107,0.2);border-radius:18px;}
+  .empty-state a{color:var(--accent);font-weight:700;}
+
+  footer{margin-top:56px;padding:38px clamp(16px,4vw,48px) 30px;border-top:1px solid rgba(163,64,107,0.12);display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;color:var(--ink-soft);font-size:.85rem;}
+  footer .foot-brand{max-width:340px;}
+  footer .foot-brand .display{margin-bottom:8px;}
+  footer .foot-links{display:flex;gap:36px;flex-wrap:wrap;}
+  footer .foot-links div h4{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);margin-bottom:10px;font-family:'Noto Sans SC',sans-serif;}
+  footer .foot-links ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
+  footer .copyright{width:100%;margin-top:20px;padding-top:16px;border-top:1px dashed rgba(163,64,107,0.18);font-size:.76rem;color:var(--ink-soft);opacity:.8;}
+
+  @media (max-width:760px){
+    .nav-links{display:none;}
+    .nav-toggle{display:flex;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="logo">
+    <a href="../首页/index9.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+      <div class="logo-crop">
+        <img class="logo-img" src="https://raw.githubusercontent.com/789xkxy/bl_drama_list_web/d5ad95e39beacf6b2a9148aa9b1f238f89aa1afd/%E7%BD%91%E7%AB%99%E5%88%B6%E4%BD%9C%E4%B8%AD/%E6%A0%87%E9%A2%98.png" alt="绝对BL" onerror="this.closest('.logo-crop').style.display='none'; this.closest('.logo-crop').nextElementSibling.style.display='flex';">
+      </div>
+      <span class="logo-fallback" style="display:none;"><span class="mark"></span><span class="logo-cn">绝对</span><span class="logo-en">BL</span></span>
+    </a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="../首页/index9.html">首页</a></li>
+    <li><a href="../列表页/list.html">剧集列表</a></li>
+    <li><a href="#">演员</a></li>
+    <li><a href="#">配对</a></li>
+    <li><a href="../想看清单/wishlist.html" class="active">想看清单</a></li>
+    <li><a href="#">剧评区</a></li>
+    <li><a href="../排行榜/ranking.html">排行榜</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="nav-toggle" aria-label="打开菜单"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<header class="page-head">
+  <h1 class="display">⭐ 想看清单</h1>
+  <p class="page-sub">想看的剧不会出现在首页和排行榜，只在这里按地区归类 · 在详情页把状态设为「想看」即可加入</p>
+</header>
+
+<div class="wrap">
+  <div id="content"></div>
+</div>
+
+<footer>
+  <div class="foot-brand">
+    <div class="display">绝对BL</div>
+    <p>这是我一个人的观剧存档，记录看过的每一部剧、每一对CP、每一次心动瞬间。数据仅保存在本地，不涉及其他用户。</p>
+  </div>
+  <div class="foot-links">
+    <div><h4>浏览</h4><ul><li><a href="../列表页/list.html">剧集列表</a></li><li><a href="#">配对标签</a></li><li><a href="../排行榜/ranking.html">排行榜</a></li></ul></div>
+    <div><h4>我的</h4><ul><li><a href="../想看清单/wishlist.html">想看清单</a></li><li><a href="#">剧评区</a></li><li><a href="#">评分记录</a></li></ul></div>
+  </div>
+  <div class="copyright">© 2026 绝对BL · 个人观剧记录站 · 持续更新中</div>
+</footer>
+
+<script src="../../剧集数据/dramas.js"></script>
+<script>
+(function(){
+  const gradients = ['#e79cc0,#a35a89','#8fb9d8,#4f6f96','#b79ce0,#6f4f9c','#f0b3c4,#c9749a','#c9a6dd,#8368a8','#9fd0c7,#4f9488'];
+  const dramaData = (window.DRAMAS || []).map((d, i) => Object.assign({}, d, { raw: toRaw(d.image), grad: gradients[i % gradients.length] }));
+
+  function toRaw(url){
+    const m = url.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/([^/]+)\/(.+)$/);
+    if(!m) return url;
+    return 'https://raw.githubusercontent.com/' + m[1] + '/' + m[2] + '/' + m[3] + '/' + m[4];
+  }
+  function hexToRgb(hex){
+    const n = parseInt(hex.replace('#',''), 16);
+    return [(n>>16)&255, (n>>8)&255, n&255];
+  }
+  function buildPosterFallback(rgb){
+    return 'linear-gradient(170deg, rgb(' + Math.min(255, rgb[0]+40) + ',' + Math.min(255, rgb[1]+40) + ',' + Math.min(255, rgb[2]+40) + '), rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ') 78%)';
+  }
+
+  function loadStatus(){ try { return JSON.parse(localStorage.getItem('bl_status')) || {}; } catch(e){ return {}; } }
+  const statusMap = loadStatus();
+  const wishIds = Object.keys(statusMap).filter(id => statusMap[id] === '想看');
+  const wish = dramaData.filter(d => wishIds.includes(d.id));
+
+  const REGION_ORDER = ['日本','泰国','韩国'];
+  const countries = [];
+  REGION_ORDER.forEach(ct => { if(wish.some(d => d.country === ct)) countries.push(ct); });
+  wish.forEach(d => { if(!countries.includes(d.country)) countries.push(d.country); });
+
+  const content = document.getElementById('content');
+  if(!wish.length){
+    content.innerHTML = '<div class="empty-state">还没有想看的剧～<br><br>去 <a href="../列表页/list.html">剧集列表</a> 挑一部，在详情页把状态设为「想看」，它就会出现在这里<br>（想看的剧不会出现在首页和排行榜）</div>';
+    return;
+  }
+
+  const flag = { '日本':'🇯🇵', '泰国':'🇹🇭', '韩国':'🇰🇷' };
+  let html = '<div class="region-cols">';
+  countries.forEach(ct => {
+    const items = wish.filter(d => d.country === ct);
+    html += '<div class="region-col">';
+    html += '<div class="region-head"><span class="flag">' + (flag[ct] || '🏳️') + '</span>' + ct + ' <span style="font-size:.78rem;color:var(--ink-soft);font-weight:400;">' + items.length + ' 部</span></div>';
+    html += '<div class="wish-list">';
+    items.forEach(d => {
+      const baseCol = d.color ? hexToRgb(d.color) : d.grad.split(',').map(hexToRgb)[0];
+      html += '<div class="wish-item" data-id="' + d.id + '">' +
+        '<span class="wish-thumb"><img src="' + d.raw + '" alt="' + d.title + '" loading="lazy"></span>' +
+        '<div class="wish-main"><div class="t">' + d.title + '</div><div class="s">' + d.cp + ' · ' + d.country + ' · ' + d.year + '</div></div>' +
+        '<span class="wish-star">⭐</span>' +
+      '</div>';
+    });
+    html += '</div></div>';
+  });
+  html += '</div>';
+  content.innerHTML = html;
+
+  document.querySelectorAll('#content .wish-item').forEach(el => {
+    el.addEventListener('click', () => { location.href = '../详情页/drama.html?id=' + el.dataset.id; });
+  });
+})();
+</script>
+</body>
+</html>

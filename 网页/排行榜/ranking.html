@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>排行榜 · 绝对BL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Pacifico&family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff8fb; --bg-alt:#fcf0f5; --pink:#f3c9db; --blue:#c6e3f1; --lavender:#ddcff2;
+    --ink:#3a2a3c; --ink-soft:#7a6579; --accent:#a3406b; --accent-deep:#7c2f52; --gold:#d9a441;
+    --card-radius:18px; --shadow-soft:0 10px 30px -14px rgba(122,63,92,0.35);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans SC',sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4,.display{font-family:'Noto Serif SC',serif;margin:0;}
+  a{color:inherit;}
+  img{max-width:100%;display:block;}
+  button{font-family:inherit;cursor:pointer;}
+
+  .site-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px clamp(20px,5vw,56px);background:rgba(255,248,251,0.82);backdrop-filter:blur(10px);border-bottom:1px solid rgba(163,64,107,0.12);}
+  .logo{display:flex;align-items:center;gap:8px;}
+  .logo-crop{position:relative;height:52px;width:172px;overflow:hidden;flex-shrink:0;}
+  .logo-crop .logo-img{position:absolute;top:50%;left:50%;height:230%;width:auto;max-width:none;transform:translate(-50%,-50%);mix-blend-mode:multiply;}
+  .logo-fallback{display:flex;align-items:center;gap:8px;}
+  .logo .mark{width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,var(--pink),var(--blue),var(--lavender),var(--pink));flex-shrink:0;}
+  .logo-cn{font-family:'ZCOOL KuaiLe',cursive;font-size:1.9rem;font-weight:400;letter-spacing:.02em;color:#ff6fa8;text-shadow:2px 2px 0 #ffe3ee;}
+  .logo-en{font-family:'Pacifico',cursive;font-size:1.45rem;font-weight:400;letter-spacing:.01em;margin-left:3px;background:linear-gradient(120deg,#ff3399,#9c5fd6);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(1.5px 1.5px 0 #ffe3ee);}
+  .nav-links{display:flex;gap:28px;list-style:none;margin:0;padding:0;font-size:.92rem;font-weight:500;color:var(--ink-soft);}
+  .nav-links a{position:relative;padding:4px 0;transition:color .2s ease;}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--lavender));transition:width .25s ease;}
+  .nav-links a:hover{color:var(--accent-deep);}
+  .nav-links a:hover::after{width:100%;}
+  .nav-links a.active{color:var(--accent-deep);font-weight:700;}
+  .nav-links a.active::after{width:100%;}
+  .nav-right{display:flex;align-items:center;gap:10px;}
+  .nav-toggle{display:none;flex-direction:column;gap:4px;background:none;border:none;padding:6px;}
+  .nav-toggle span{width:22px;height:2px;background:var(--accent-deep);border-radius:2px;}
+
+  .page-head{padding:34px clamp(16px,3vw,40px) 4px;max-width:1560px;margin:0 auto;}
+  .page-head h1{font-size:2rem;color:var(--ink);}
+  .page-sub{font-size:.85rem;color:var(--ink-soft);margin-top:8px;}
+
+  .rank-wrap{max-width:1560px;margin:0 auto;padding:18px clamp(16px,3vw,40px) 10px;display:grid;grid-template-columns:228px 1fr;gap:30px;align-items:start;}
+
+  /* 主榜标签 */
+  .rank-tabs{display:flex;flex-direction:column;gap:8px;}
+  .rank-tab{padding:10px 16px;border-radius:14px;border:1px solid rgba(163,64,107,0.22);background:#fff;color:var(--ink-soft);font-size:.9rem;font-weight:700;text-align:left;transition:all .2s;}
+  .rank-tab:hover{transform:translateY(-1px);box-shadow:var(--shadow-soft);}
+  .rank-tab.active{background:linear-gradient(120deg,var(--pink),var(--lavender));color:var(--accent-deep);border-color:transparent;}
+
+  .sub-tabs{display:flex;flex-direction:column;gap:6px;}
+  .rank-side{position:sticky;top:84px;display:flex;flex-direction:column;gap:20px;}
+  .side-block{background:#fff;border:1px solid rgba(163,64,107,0.1);border-radius:18px;padding:14px 14px 16px;box-shadow:0 8px 20px -16px rgba(58,42,60,0.3);}
+  .side-label{font-size:.72rem;font-weight:700;letter-spacing:.12em;color:var(--accent-deep);margin-bottom:10px;text-transform:uppercase;}
+  .rank-body{min-width:0;}
+  .chip{padding:7px 14px;border-radius:12px;font-size:.84rem;font-weight:500;text-align:left;border:1px solid rgba(163,64,107,0.22);background:#fff;color:var(--ink-soft);transition:all .2s;}
+  .chip:hover{background:linear-gradient(120deg,var(--pink),var(--lavender));color:var(--accent-deep);border-color:transparent;}
+  .chip.active{background:linear-gradient(120deg,var(--pink),var(--lavender));color:var(--accent-deep);border-color:transparent;font-weight:700;}
+
+  .rank-info{font-size:.82rem;color:var(--ink-soft);margin-bottom:16px;}
+
+  /* 区域分组头 */
+  .region-head{display:flex;align-items:center;gap:10px;margin:26px 0 14px;font-family:'Noto Serif SC',serif;font-size:1.25rem;color:var(--ink);}
+  .region-head .flag{font-size:1.15rem;}
+  .region-head::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(163,64,107,0.25),transparent);}
+  .region-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-items:start;}
+  .region-col{min-width:0;}
+  .region-col .region-head{margin:0 0 10px;font-size:1.05rem;}
+  .region-col .rank-list{gap:6px;margin-bottom:0;}
+  .region-col .rank-item{padding:8px 12px;gap:10px;}
+  .region-col .rank-bar-wrap{width:84px;}
+  .region-col .rank-score{min-width:34px;font-size:.92rem;}
+
+  /* 领奖台 */
+
+  /* 榜单行 */
+  .rank-list{display:flex;flex-direction:column;gap:10px;margin-bottom:30px;}
+  .rank-item{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid rgba(163,64,107,0.1);border-radius:12px;padding:8px 12px;box-shadow:0 6px 16px -14px rgba(58,42,60,0.3);transition:transform .2s, box-shadow .2s;cursor:pointer;}
+  .rank-item:hover{transform:translateY(-2px);box-shadow:var(--shadow-soft);}
+  .rank-pos{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-weight:800;font-size:.82rem;color:#fff;background:linear-gradient(160deg,#c9b3da,#9a7fb4);}
+  .rank-pos.top1{background:linear-gradient(160deg,#ffe9a8,#d9a441);color:#6b4a00;}
+  .rank-pos.top2{background:linear-gradient(160deg,#eef0f2,#b9c0c9);color:#3d444c;}
+  .rank-pos.top3{background:linear-gradient(160deg,#f0d0be,#c98f63);color:#5c3518;}
+  .rank-pos.medal{background:rgba(255,255,255,0.92);color:var(--accent-deep);font-size:1.02rem;}
+  .rank-item.hl1{background:linear-gradient(90deg,#fff7e6,#fff);border-color:#e8cf8f;}
+  .rank-item.hl2{background:linear-gradient(90deg,#f2f4f7,#fff);border-color:#d5dbe3;}
+  .rank-item.hl3{background:linear-gradient(90deg,#fdf0e6,#fff);border-color:#e6c3a6;}
+  .rank-thumb{width:36px;height:50px;border-radius:6px;overflow:hidden;position:relative;flex-shrink:0;background:var(--bg-alt);}
+  .rank-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .rank-main{flex:1;min-width:0;}
+  .rank-main .t{font-size:.9rem;color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rank-main .s{font-size:.74rem;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rank-bar-wrap{width:110px;flex-shrink:0;}
+  .rank-bar{height:8px;border-radius:999px;background:var(--bg-alt);overflow:hidden;}
+  .rank-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--pink),var(--lavender));}
+  .rank-bar-label{font-size:.7rem;color:var(--ink-soft);margin-top:4px;text-align:right;}
+  .rank-score{font-size:.95rem;font-weight:800;color:var(--accent-deep);flex-shrink:0;min-width:38px;text-align:right;font-family:'Noto Serif SC',serif;}
+  .rank-pending{font-size:.74rem;color:var(--accent-deep);background:var(--bg-alt);padding:4px 10px;border-radius:999px;flex-shrink:0;}
+
+  .empty-state{text-align:center;padding:70px 20px;color:var(--ink-soft);font-size:.95rem;}
+  .empty-state a{color:var(--accent);font-weight:700;}
+
+  footer{margin-top:56px;padding:38px clamp(16px,4vw,48px) 30px;border-top:1px solid rgba(163,64,107,0.12);display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;color:var(--ink-soft);font-size:.85rem;}
+  footer .foot-brand{max-width:340px;}
+  footer .foot-brand .display{margin-bottom:8px;}
+  footer .foot-links{display:flex;gap:36px;flex-wrap:wrap;}
+  footer .foot-links div h4{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);margin-bottom:10px;font-family:'Noto Sans SC',sans-serif;}
+  footer .foot-links ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
+  footer .copyright{width:100%;margin-top:20px;padding-top:16px;border-top:1px dashed rgba(163,64,107,0.18);font-size:.76rem;color:var(--ink-soft);opacity:.8;}
+
+  @media (max-width:920px){
+    .rank-wrap{grid-template-columns:1fr;gap:18px;}
+    .rank-side{position:static;gap:14px;}
+    .rank-tabs{flex-direction:row;flex-wrap:wrap;}
+    .sub-tabs{flex-direction:row;flex-wrap:wrap;}
+  }
+
+  @media (max-width:760px){
+    .nav-links{display:none;}
+    .nav-toggle{display:flex;}
+    .rank-bar-wrap{display:none;}
+    .rank-thumb{width:38px;height:50px;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="logo">
+    <a href="../首页/index9.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+      <div class="logo-crop">
+        <img class="logo-img" src="https://raw.githubusercontent.com/789xkxy/bl_drama_list_web/d5ad95e39beacf6b2a9148aa9b1f238f89aa1afd/%E7%BD%91%E7%AB%99%E5%88%B6%E4%BD%9C%E4%B8%AD/%E6%A0%87%E9%A2%98.png" alt="绝对BL" onerror="this.closest('.logo-crop').style.display='none'; this.closest('.logo-crop').nextElementSibling.style.display='flex';">
+      </div>
+      <span class="logo-fallback" style="display:none;"><span class="mark"></span><span class="logo-cn">绝对</span><span class="logo-en">BL</span></span>
+    </a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="../首页/index9.html">首页</a></li>
+    <li><a href="../列表页/list.html">剧集列表</a></li>
+    <li><a href="#">演员</a></li>
+    <li><a href="#">配对</a></li>
+    <li><a href="../想看清单/wishlist.html">想看清单</a></li>
+    <li><a href="#">剧评区</a></li>
+    <li><a href="../排行榜/ranking.html" class="active">排行榜</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="nav-toggle" aria-label="打开菜单"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<header class="page-head">
+  <h1 class="display">排行榜</h1>
+  <p class="page-sub">按区域 / 六维评分 / 标签 查看排名 · 数据来自你在详情页打的本地评分</p>
+</header>
+
+<div class="rank-wrap">
+  <aside class="rank-side">
+    <div class="side-block">
+      <div class="side-label">榜单类型</div>
+      <div class="rank-tabs" id="rankTabs"></div>
+    </div>
+    <div class="side-block">
+      <div class="side-label">筛选</div>
+      <div class="sub-tabs" id="subTabs"></div>
+    </div>
+  </aside>
+  <section class="rank-body">
+    <div class="rank-info" id="rankInfo"></div>
+    <div id="rankContent"></div>
+  </section>
+</div>
+
+<footer>
+  <div class="foot-brand">
+    <div class="display">绝对BL</div>
+    <p>这是我一个人的观剧存档，记录看过的每一部剧、每一对CP、每一次心动瞬间。数据仅保存在本地，不涉及其他用户。</p>
+  </div>
+  <div class="foot-links">
+    <div><h4>浏览</h4><ul><li><a href="../列表页/list.html">剧集列表</a></li><li><a href="#">配对标签</a></li><li><a href="../排行榜/ranking.html">排行榜</a></li></ul></div>
+    <div><h4>我的</h4><ul><li><a href="../想看清单/wishlist.html">想看清单</a></li><li><a href="#">剧评区</a></li><li><a href="#">评分记录</a></li></ul></div>
+  </div>
+  <div class="copyright">© 2026 绝对BL · 个人观剧记录站 · 持续更新中</div>
+</footer>
+
+<script src="../../剧集数据/dramas.js"></script>
+<script>
+(function(){
+  const DIMS = ['剧情','服化道','攻的颜值','受的颜值','镜头美学','CP感'];
+  const REGION_ORDER = ['日本','泰国','韩国'];
+  const TIE_DIMS = ['剧情','镜头美学','CP感','服化道','受的颜值','攻的颜值'];
+  const gradients = ['#e79cc0,#a35a89','#8fb9d8,#4f6f96','#b79ce0,#6f4f9c','#f0b3c4,#c9749a','#c9a6dd,#8368a8','#9fd0c7,#4f9488'];
+  const dramaData = (window.DRAMAS || []).map((d, i) => Object.assign({}, d, { raw: toRaw(d.image), grad: gradients[i % gradients.length] }));
+
+  function toRaw(url){
+    const m = url.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/([^/]+)\/(.+)$/);
+    if(!m) return url;
+    return 'https://raw.githubusercontent.com/' + m[1] + '/' + m[2] + '/' + m[3] + '/' + m[4];
+  }
+  function extractColor(img){
+    return new Promise((resolve) => {
+      try{
+        const c = document.createElement('canvas');
+        const w = c.width = 24, h = c.height = 32;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const data = ctx.getImageData(0, 0, w, h).data;
+        let r=0,g=0,b=0,n=0;
+        for(let i=0;i<data.length;i+=4){ r+=data[i]; g+=data[i+1]; b+=data[i+2]; n++; }
+        resolve([Math.round(r/n), Math.round(g/n), Math.round(b/n)]);
+      }catch(e){ resolve(null); }
+    });
+  }
+  const toward = (rgb, target, amt) => rgb.map((c,i) => Math.round(c + (target[i]-c)*amt));
+  const mixWhite = (rgb, amt) => toward(rgb, [255,255,255], amt);
+  const mixBlack = (rgb, amt) => toward(rgb, [0,0,0], amt);
+  const rgbStr = (rgb, a) => a===undefined ? 'rgb('+rgb[0]+','+rgb[1]+','+rgb[2]+')' : 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+a+')';
+  const hexToRgb = (hex) => {
+    const n = parseInt(hex.replace('#',''), 16);
+    return [(n>>16)&255, (n>>8)&255, n&255];
+  };
+  function buildPosterFallback(rgb){
+    const deep = mixBlack(rgb, 0.3);
+    const light = mixWhite(rgb, 0.1);
+    return 'linear-gradient(170deg, ' + rgbStr(light) + ', ' + rgbStr(deep) + ' 78%)';
+  }
+
+  const ratings = loadRatings();
+  function loadStatus(){ try { return JSON.parse(localStorage.getItem('bl_status')) || {}; } catch(e){ return {}; } }
+  const statusMap = loadStatus();
+  /* 排名可见性：想看不计入；正在看且未评分也不计入 */
+  function isRankHidden(x){
+    const st = statusMap[x.d.id];
+    if(st === '想看') return true;
+    if(st === '正在看' && x.score == null) return true;
+    return false;
+  }
+  function loadRatings(){ try { return JSON.parse(localStorage.getItem('bl_ratings')) || {}; } catch(e){ return {}; } }
+
+  function totalOf(d){
+    const r = ratings[d.id];
+    if(!r) return null;
+    const vals = DIMS.map(dim => r[dim]).filter(v => v != null && !isNaN(v)).map(Number);
+    if(!vals.length) return null;
+    return vals.reduce((s,v) => s+v, 0) / vals.length;
+  }
+  function dimOf(d, dim){
+    const r = ratings[d.id];
+    if(!r || r[dim] == null) return null;
+    return Number(r[dim]);
+  }
+
+  /* 区域顺序：日泰韩优先，其他按数据出现顺序追加 */
+  const countries = [];
+  REGION_ORDER.forEach(ct => { if(dramaData.some(d => d.country === ct)) countries.push(ct); });
+  dramaData.forEach(d => { if(!countries.includes(d.country)) countries.push(d.country); });
+  const tags = [...new Set(dramaData.flatMap(d => d.tags || []))].sort((a,b) => a.localeCompare(b, 'zh'));
+
+  const qp = new URLSearchParams(location.search);
+  const state = { main: 'region', sub: '全部' };
+  if(['region','dim','tag'].includes(qp.get('main'))){
+    state.main = qp.get('main');
+    state.sub = state.main === 'region' ? (qp.get('sub') || '全部') : (state.main === 'dim' ? (qp.get('sub') || DIMS[0]) : (qp.get('sub') || (tags[0] || '')));
+    if(state.main === 'region' && state.sub !== '全部' && !countries.includes(state.sub)) state.sub = '全部';
+    if(state.main === 'dim' && !DIMS.includes(state.sub)) state.sub = DIMS[0];
+    if(state.main === 'tag' && !tags.includes(state.sub)) state.sub = tags[0] || '';
+  }
+
+  function renderTabs(){
+    const mainWrap = document.getElementById('rankTabs');
+    mainWrap.innerHTML = '';
+    [
+      {key:'region', label:'🌏 区域榜'},
+      {key:'dim',    label:'📊 维度榜'},
+      {key:'tag',    label:'🏷️ Tag 榜'}
+    ].forEach(def => {
+      const b = document.createElement('button');
+      b.className = 'rank-tab' + (state.main === def.key ? ' active' : '');
+      b.textContent = def.label;
+      b.addEventListener('click', () => {
+        state.main = def.key;
+        state.sub = def.key === 'region' ? '全部' : (def.key === 'dim' ? DIMS[0] : (tags[0] || ''));
+        renderTabs();
+        render();
+      });
+      mainWrap.appendChild(b);
+    });
+
+    const subWrap = document.getElementById('subTabs');
+    subWrap.innerHTML = '';
+    let opts = [];
+    if(state.main === 'region') opts = ['全部', ...countries];
+    else if(state.main === 'dim') opts = DIMS;
+    else opts = tags;
+    opts.forEach(o => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (state.sub === o ? ' active' : '');
+      b.textContent = state.main === 'tag' ? '#' + o : o;
+      b.addEventListener('click', () => { state.sub = o; renderTabs(); render(); });
+      subWrap.appendChild(b);
+    });
+  }
+
+  /* 当前子榜下的排序列表；region=全部 时返回按国家分组结构 */
+  /* 破平规则：
+     国榜/Tag榜：总分相同 → 按 剧情→镜头→CP感→服化道→受颜→攻颜
+     维度榜：维度分相同 → 按总分
+     都相同 → 按 id */
+  function dimVal(d, dim){
+    const r = ratings[d.id];
+    return (r && r[dim] != null) ? Number(r[dim]) : -1;
+  }
+  function cmpByMain(a, b){
+    if(a.score == null && b.score == null) return Number(a.d.id) - Number(b.d.id);
+    if(a.score == null) return 1;
+    if(b.score == null) return -1;
+    if(b.score !== a.score) return b.score - a.score;
+    if(state.main === 'dim'){
+      const at = totalOf(a.d), bt = totalOf(b.d);
+      if(at == null && bt == null) return Number(a.d.id) - Number(b.d.id);
+      if(at == null) return 1;
+      if(bt == null) return -1;
+      if(bt !== at) return bt - at;
+      return Number(a.d.id) - Number(b.d.id);
+    }
+    for(const dim of TIE_DIMS){
+      const av = dimVal(a.d, dim), bv = dimVal(b.d, dim);
+      if(av !== bv) return bv - av;
+    }
+    return Number(a.d.id) - Number(b.d.id);
+  }
+
+  function currentItems(){
+    let list = dramaData.map(d => {
+      const score = state.main === 'dim' ? dimOf(d, state.sub) : totalOf(d);
+      return { d: d, score: score };
+    });
+    if(state.main === 'region' && state.sub !== '全部') list = list.filter(x => x.d.country === state.sub);
+    if(state.main === 'tag') list = list.filter(x => (x.d.tags || []).includes(state.sub));
+    list = list.filter(x => !isRankHidden(x));
+    list.sort(cmpByMain);
+    return list;
+  }
+
+  function sectionFor(ct){
+    const list = dramaData
+      .filter(d => d.country === ct)
+      .map(d => ({ d: d, score: state.main === 'dim' ? dimOf(d, state.sub) : totalOf(d) }))
+      .filter(x => !isRankHidden(x))
+      .sort(cmpByMain);
+    return list;
+  }
+
+  function flagOf(ct){
+    return { '日本':'🇯🇵', '泰国':'🇹🇭', '韩国':'🇰🇷' }[ct] || '🏳️';
+  }
+
+  function rowHtml(x, rank){
+    const d = x.d;
+    const isTop = rank <= 3;
+    const hlCls = isTop ? ' hl' + rank : '';
+    const posCls = isTop ? ' medal' : ' top' + rank;
+    const scoreBar = x.score != null ? (x.score * 10) : 0;
+    const label = state.main === 'dim' ? state.sub : '总评';
+    const thumbBg = (() => { const [gl] = d.grad.split(',').map(hexToRgb); return buildPosterFallback(gl); })();
+    return '<div class="rank-item' + hlCls + '" data-id="' + d.id + '">' +
+      '<span class="rank-pos' + posCls + '">' + (isTop ? ['🥇','🥈','🥉'][rank-1] : rank) + '</span>' +
+      '<span class="rank-thumb"><img src="' + d.raw + '" alt="' + d.title + '" loading="lazy"></span>' +
+      '<div class="rank-main"><div class="t">' + d.title + '</div><div class="s">' + d.cp + ' · ' + d.country + ' · ' + d.year + '</div></div>' +
+      (x.score != null
+        ? '<div class="rank-bar-wrap"><div class="rank-bar"><i style="width:' + scoreBar + '%"></i></div><div class="rank-bar-label">' + label + '</div></div>'
+        : '<span class="rank-pending">待评分</span>') +
+      (x.score != null ? '<span class="rank-score">' + x.score.toFixed(1) + '</span>' : '') +
+    '</div>';
+  }
+
+  function bindRows(){
+    document.querySelectorAll('#rankContent .rank-item').forEach(el => {
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', () => { location.href = '../详情页/drama.html?id=' + el.dataset.id; });
+    });
+  }
+
+  function render(){
+    const content = document.getElementById('rankContent');
+    const info = document.getElementById('rankInfo');
+    content.innerHTML = '';
+    const ratedCount = dramaData.filter(d => totalOf(d) != null).length;
+
+    if(state.main === 'region' && state.sub === '全部'){
+      if(!ratedCount){
+        info.textContent = '还没有评分记录，去详情页打打分吧～';
+        content.innerHTML = '<div class="empty-state">先去 <a href="../列表页/list.html">剧集列表</a> 挑一部剧，在详情页里给它打分吧～</div>';
+        return;
+      }
+      let html = '<div class="region-cols">';
+      let totalRated = 0;
+      let totalShown = 0;
+      countries.forEach(ct => {
+        const items = sectionFor(ct);
+        if(!items.length) return;
+        const rated = items.filter(x => x.score != null).length;
+        totalRated += rated;
+        totalShown += items.length;
+        html += '<div class="region-col">';
+        html += '<div class="region-head"><span class="flag">' + flagOf(ct) + '</span>' + ct + ' <span style="font-size:.78rem;color:var(--ink-soft);font-weight:400;">' + rated + ' 部</span></div>';
+        html += '<div class="rank-list">' + items.map((x, i) => rowHtml(x, i + 1)).join('') + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+      info.textContent = '共 ' + totalShown + ' 部上榜 · ' + totalRated + ' 部已评分 · 想看与未评分「正在看」不计入 · 同分按 剧情→镜头→CP感→服化道→受颜→攻颜 破平';
+      content.innerHTML = html;
+    } else {
+      if(!ratedCount && state.main !== 'dim'){
+        info.textContent = '还没有评分记录，去详情页打打分吧～';
+        content.innerHTML = '<div class="empty-state">先去 <a href="../列表页/list.html">剧集列表</a> 挑一部剧，在详情页里给它打分吧～</div>';
+        return;
+      }
+      const items = currentItems();
+      const label = state.main === 'dim' ? '按「' + state.sub + '」维度排序' : (state.main === 'tag' ? '按总评排序（仅含 #' + state.sub + ' 标签）' : '按总评（六维平均）排序');
+      const rated = items.filter(x => x.score != null).length;
+      info.textContent = '共 ' + items.length + ' 部，' + rated + ' 部已评分 · ' + label;
+      let html = '';
+      html += '<div class="rank-list">' + items.map((x, i) => rowHtml(x, i + 1)).join('') + '</div>';
+      content.innerHTML = html;
+    }
+    bindRows();
+    // 给行内海报取色（本地图片不跨域，直接取色；失败则保留渐变）
+    document.querySelectorAll('#rankContent .rank-thumb img').forEach(img => {
+      if(/^https?:/i.test(img.src)) img.crossOrigin = 'anonymous';
+      img.addEventListener('load', () => {
+        extractColor(img).then(rgb => {
+          if(!rgb) return;
+          const fb = img.parentElement.querySelector('.poster-fallback');
+          if(fb) fb.style.background = buildPosterFallback(rgb);
+        });
+      });
+    });
+  }
+
+  /* ---- mobile nav ---- */
+  const toggle = document.querySelector('.nav-toggle');
+  const links = document.querySelector('.nav-links');
+  toggle.addEventListener('click', () => {
+    const open = links.style.display === 'flex';
+    links.style.display = open ? 'none' : 'flex';
+    links.style.flexDirection = 'column';
+    links.style.position = 'absolute';
+    links.style.top = '58px';
+    links.style.right = '20px';
+    links.style.background = '#fff';
+    links.style.padding = '16px 22px';
+    links.style.borderRadius = '14px';
+    links.style.boxShadow = '0 12px 30px -12px rgba(58,42,60,0.35)';
+  });
+
+  renderTabs();
+  render();
+})();
+</script>
+</body>
+</html>
